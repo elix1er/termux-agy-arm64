@@ -1,0 +1,30 @@
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*~
+
+# Local environment
+.env
+.env.*
+!.env.example
+.direnv/
+
+# Logs / temporary files
+*.log
+tmp/
+temp/
+.cache/
+
+# Build / test output
+dist/
+build/
+coverage/
+*.tar
+*.tar.gz
+*.zip
+
+# Local Antigravity payloads
+agy
+agy.va39
