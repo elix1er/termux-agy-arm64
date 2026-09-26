@@ -1,0 +1,84 @@
+name: Upstream watch
+
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    name: Check release pin
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Compare pinned and latest upstream release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+
+          current=$(sed -n 's/^readonly RELEASE_VERSION="\([^"]*\)"$/\1/p' install.sh)
+          current_digest=$(sed -n 's/^readonly RELEASE_SHA256="\([^"]*\)"$/\1/p' install.sh)
+          asset=$(sed -n 's/^readonly RELEASE_ASSET="\([^"]*\)"$/\1/p' install.sh)
+
+          [[ -n "$current" && -n "$current_digest" && -n "$asset" ]]
+
+          metadata=$(curl -fsSL --retry 3             https://api.github.com/repos/wallentx/antigravity-cli-termux/releases/latest)
+
+          latest_tag=$(jq -r '.tag_name // empty' <<<"$metadata")
+          latest="${latest_tag#v}"
+          latest_digest=$(jq -r --arg asset "$asset"             '.assets[] | select(.name == $asset) | .digest // empty'             <<<"$metadata")
+          release_url=$(jq -r '.html_url // empty' <<<"$metadata")
+
+          [[ -n "$latest" ]] || {
+            echo "Latest upstream release has no tag." >&2
+            exit 1
+          }
+
+          expected="sha256:${current_digest}"
+
+          if [[ "$latest" == "$current" && "$latest_digest" == "$expected" ]]; then
+            printf 'pin is current: v%s %s\n' "$current" "$expected"
+            exit 0
+          fi
+
+          if [[ "$latest" == "$current" ]]; then
+            title="Pinned digest changed for upstream v${latest}"
+            reason="The upstream tag is unchanged, but GitHub reports a different digest for the pinned asset."
+          else
+            title="Upstream Antigravity Termux v${latest} is available"
+            reason="The pinned release is behind the latest published upstream release."
+          fi
+
+          existing=$(gh issue list             --repo "$GITHUB_REPOSITORY"             --state open             --search "$title in:title"             --json number,title             --jq 'map(select(.title == env.title))[0].number // empty'             2>/dev/null || true)
+
+          if [[ -n "$existing" ]]; then
+            printf 'existing issue #%s already tracks this change\n' "$existing"
+            exit 0
+          fi
+
+          body="$RUNNER_TEMP/upstream-watch.md"
+          cat >"$body" <<EOF
+          $reason
+
+          | Field | Value |
+          | --- | --- |
+          | Pinned version | `v$current` |
+          | Pinned digest | `sha256:$current_digest` |
+          | Latest version | `v$latest` |
+          | Latest digest | `${latest_digest:-missing}` |
+          | Release | $release_url |
+
+          Update `RELEASE_VERSION` and `RELEASE_SHA256` together, then run `./scripts/check.sh`.
+          EOF
+
+          gh issue create             --repo "$GITHUB_REPOSITORY"             --title "$title"             --body-file "$body"
