@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  shell:
+    name: Shell checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install shell tooling
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck shfmt jq
+
+      - name: Run repository checks
+        run: ./scripts/check.sh
+
+      - name: Verify pinned release metadata
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+
+          version=$(sed -n 's/^readonly RELEASE_VERSION="\([^"]*\)"$/\1/p' install.sh)
+          asset=$(sed -n 's/^readonly RELEASE_ASSET="\([^"]*\)"$/\1/p' install.sh)
+          digest=$(sed -n 's/^readonly RELEASE_SHA256="\([^"]*\)"$/\1/p' install.sh)
+
+          [[ -n "$version" && -n "$asset" && -n "$digest" ]]
+
+          metadata=$(curl -fsSL --retry 3             "https://api.github.com/repos/wallentx/antigravity-cli-termux/releases/tags/v${version}")
+
+          published=$(jq -r --arg asset "$asset"             '.assets[] | select(.name == $asset) | .digest // empty'             <<<"$metadata")
+
+          expected="sha256:${digest}"
+          if [[ "$published" != "$expected" ]]; then
+            printf 'Pinned digest:    %s\n' "$expected" >&2
+            printf 'Published digest: %s\n' "${published:-<missing>}" >&2
+            exit 1
+          fi
+
+          printf 'release pin verified: v%s %s\n' "$version" "$published"
