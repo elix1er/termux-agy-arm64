@@ -32,11 +32,11 @@ jobs:
 
           [[ -n "$current" && -n "$current_digest" && -n "$asset" ]]
 
-          metadata=$(curl -fsSL --retry 3             https://api.github.com/repos/wallentx/antigravity-cli-termux/releases/latest)
+          metadata=$(curl -fsSL --retry 3 https://api.github.com/repos/wallentx/antigravity-cli-termux/releases/latest)
 
           latest_tag=$(jq -r '.tag_name // empty' <<<"$metadata")
           latest="${latest_tag#v}"
-          latest_digest=$(jq -r --arg asset "$asset"             '.assets[] | select(.name == $asset) | .digest // empty'             <<<"$metadata")
+          latest_digest=$(jq -r --arg asset "$asset" '.assets[] | select(.name == $asset) | .digest // empty' <<<"$metadata")
           release_url=$(jq -r '.html_url // empty' <<<"$metadata")
 
           [[ -n "$latest" ]] || {
@@ -59,7 +59,7 @@ jobs:
             reason="The pinned release is behind the latest published upstream release."
           fi
 
-          existing=$(gh issue list             --repo "$GITHUB_REPOSITORY"             --state open             --search "$title in:title"             --json number,title             --jq 'map(select(.title == env.title))[0].number // empty'             2>/dev/null || true)
+          existing=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "$title in:title" --limit 1 --json number --jq '.[0].number // empty' 2>/dev/null || true)
 
           if [[ -n "$existing" ]]; then
             printf 'existing issue #%s already tracks this change\n' "$existing"
@@ -81,4 +81,4 @@ jobs:
           Update `RELEASE_VERSION` and `RELEASE_SHA256` together, then run `./scripts/check.sh`.
           EOF
 
-          gh issue create             --repo "$GITHUB_REPOSITORY"             --title "$title"             --body-file "$body"
+          gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body-file "$body"
