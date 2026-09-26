@@ -87,7 +87,7 @@ assert_safe_archive() {
 
   while IFS= read -r entry; do
     case "$entry" in
-      /*|../*|*/../*|*/..)
+      /* | ../* | */../* | */..)
         die "Archive contains an unsafe path: $entry"
         ;;
     esac
@@ -115,7 +115,7 @@ download_release() {
   local dest=$1
 
   info "Downloading Antigravity Termux v${RELEASE_VERSION}"
-  curl     --fail     --location     --silent     --show-error     --retry 3     --retry-delay 1     --retry-connrefused     --proto '=https'     --tlsv1.2     "$RELEASE_URL"     --output "$dest"
+  curl --fail --location --silent --show-error --retry 3 --retry-delay 1 --retry-connrefused --proto '=https' --tlsv1.2 "$RELEASE_URL" --output "$dest"
 
   verify_sha256 "$dest" "$RELEASE_SHA256"
   ok "Release checksum verified"
@@ -173,7 +173,7 @@ backup_current_install() {
     cp -a "$bin_dir/agy.va39" "$BACKUP_DIR/agy.va39"
   fi
 
-  if (( HAD_LEGACY_PACKAGE == 1 )); then
+  if ((HAD_LEGACY_PACKAGE == 1)); then
     cp -a "$LEGACY_PACKAGE_PATH" "$BACKUP_DIR/legacy-package"
   fi
 }
@@ -195,7 +195,7 @@ install_pair() {
 }
 
 remove_legacy_wrapper() {
-  (( HAD_LEGACY_PACKAGE == 1 )) || return 0
+  ((HAD_LEGACY_PACKAGE == 1)) || return 0
 
   info "Removing legacy @bash0816/agy-termux wrapper"
   npm uninstall -g @bash0816/agy-termux >/dev/null
@@ -210,19 +210,19 @@ restore_previous_install() {
 
   warn "Install failed; restoring the previous installation"
 
-  rm -f "$bin_dir/agy" "$bin_dir/agy.va39"     "$bin_dir/.agy.new.$$" "$bin_dir/.agy.va39.new.$$"
+  rm -f "$bin_dir/agy" "$bin_dir/agy.va39" "$bin_dir/.agy.new.$" "$bin_dir/.agy.va39.new.$"
 
-  if (( HAD_LEGACY_PACKAGE == 1 )) && [[ -d "$BACKUP_DIR/legacy-package" ]]; then
+  if ((HAD_LEGACY_PACKAGE == 1)) && [[ -d "$BACKUP_DIR/legacy-package" ]]; then
     mkdir -p "$(dirname "$LEGACY_PACKAGE_PATH")"
     rm -rf "$LEGACY_PACKAGE_PATH"
     cp -a "$BACKUP_DIR/legacy-package" "$LEGACY_PACKAGE_PATH"
   fi
 
-  if (( HAD_AGY == 1 )); then
+  if ((HAD_AGY == 1)); then
     cp -a "$BACKUP_DIR/agy" "$bin_dir/agy"
   fi
 
-  if (( HAD_ENGINE == 1 )); then
+  if ((HAD_ENGINE == 1)); then
     cp -a "$BACKUP_DIR/agy.va39" "$bin_dir/agy.va39"
   fi
 }
@@ -231,7 +231,7 @@ cleanup() {
   local status=$?
   set +e
 
-  if (( INSTALL_STARTED == 1 && INSTALL_OK == 0 )) && [[ -n "${PREFIX:-}" ]]; then
+  if ((INSTALL_STARTED == 1 && INSTALL_OK == 0)) && [[ -n "${PREFIX:-}" ]]; then
     restore_previous_install
   fi
 
@@ -258,7 +258,7 @@ print_check() {
 
 main() {
   case "${1:-}" in
-    --help|-h)
+    --help | -h)
       usage
       return 0
       ;;
@@ -266,8 +266,7 @@ main() {
       print_check
       return 0
       ;;
-    "")
-      ;;
+    "") ;;
     *)
       usage >&2
       die "Unknown argument: $1"

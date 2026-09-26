@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 
 ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
-# shellcheck source=../install.sh
+# shellcheck source=install.sh
 source "$ROOT_DIR/install.sh"
 
 fail() {
@@ -21,7 +21,7 @@ tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 
 assert_eq "1.2.11" "$RELEASE_VERSION" "release pin"
-assert_eq   "e1d4ca363d00e0a1c51e94ae38802f75c13ddddcb4e6afb09c49d04a50c36757"   "$RELEASE_SHA256"   "release digest"
+assert_eq "e1d4ca363d00e0a1c51e94ae38802f75c13ddddcb4e6afb09c49d04a50c36757" "$RELEASE_SHA256" "release digest"
 
 printf 'termux-agy-arm64\n' >"$tmp/payload"
 digest=$(sha256sum "$tmp/payload" | awk '{print $1}')

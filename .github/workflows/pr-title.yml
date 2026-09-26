@@ -1,0 +1,42 @@
+name: PR title
+
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - reopened
+      - synchronize
+
+permissions:
+  contents: read
+
+jobs:
+  conventional:
+    name: Conventional title
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+
+    steps:
+      - name: Validate pull request title
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+
+          pattern='^(feat|fix|docs|test|ci|chore|refactor|perf|build|revert)(\([a-z0-9._/-]+\))?(!)?: .+'
+
+          if [[ ! "$TITLE" =~ $pattern ]]; then
+            cat >&2 <<'EOF'
+          Pull request titles must follow Conventional Commits.
+
+          Examples:
+            feat(installer): add verified archive staging
+            fix(installer): restore legacy wrapper on rollback
+            ci: verify upstream release digest
+          EOF
+            exit 1
+          fi
+
+          printf 'valid PR title: %s\n' "$TITLE"
