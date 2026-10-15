@@ -3,9 +3,9 @@ set -Eeuo pipefail
 
 readonly PROJECT="termux-agy-arm64"
 readonly RELEASE_REPO="wallentx/antigravity-cli-termux"
-readonly RELEASE_VERSION="1.2.11"
+readonly RELEASE_VERSION="1.3.5"
 readonly RELEASE_ASSET="antigravity-termux-standalone.tar.gz"
-readonly RELEASE_SHA256="e1d4ca363d00e0a1c51e94ae38802f75c13ddddcb4e6afb09c49d04a50c36757"
+readonly RELEASE_SHA256="240c760f0bf5964ad36c0617a6dac9818a3dc070ce99adccb80bf2fb2809300f"
 readonly RELEASE_URL="https://github.com/${RELEASE_REPO}/releases/download/v${RELEASE_VERSION}/${RELEASE_ASSET}"
 
 TMP_DIR=""
