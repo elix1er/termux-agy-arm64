@@ -20,8 +20,8 @@ assert_eq() {
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 
-assert_eq "1.3.5" "$RELEASE_VERSION" "release pin"
-assert_eq "240c760f0bf5964ad36c0617a6dac9818a3dc070ce99adccb80bf2fb2809300f" "$RELEASE_SHA256" "release digest"
+assert_eq "1.3.6" "$RELEASE_VERSION" "release pin"
+assert_eq "0fded929e9da9281b44c0d574de8db6f2f93eeb8ec1ecc5dbee5cbc13debd7d6" "$RELEASE_SHA256" "release digest"
 
 printf 'termux-agy-arm64\n' >"$tmp/payload"
 digest=$(sha256sum "$tmp/payload" | awk '{print $1}')
