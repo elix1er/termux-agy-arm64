@@ -103,6 +103,10 @@ Changes use Conventional Commits. Installer behavior changes go through pull req
 
 See [AGENTS.md](AGENTS.md) before changing installer or release logic.
 
+## License
+
+The installer and documentation in this repository are licensed under the [MIT License](LICENSE). Downloaded Antigravity binaries are not covered by this license and remain subject to their respective terms.
+
 ## Credits
 
 Compatibility work that made native Termux execution possible comes from the Antigravity CLI community, including [wallentx](https://github.com/wallentx/antigravity-cli-termux), [Brajesh2022](https://gist.github.com/Brajesh2022/e42160d29b55417db6c18c52dd1d6d37), [hjotha](https://github.com/hjotha), and earlier Termux wrapper work by [bash0816](https://github.com/bash0816/agy-termux).
