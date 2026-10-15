@@ -72,13 +72,13 @@ jobs:
 
           | Field | Value |
           | --- | --- |
-          | Pinned version | `v$current` |
-          | Pinned digest | `sha256:$current_digest` |
-          | Latest version | `v$latest` |
-          | Latest digest | `${latest_digest:-missing}` |
+          | Pinned version | \`v$current\` |
+          | Pinned digest | \`sha256:$current_digest\` |
+          | Latest version | \`v$latest\` |
+          | Latest digest | \`${latest_digest:-missing}\` |
           | Release | $release_url |
 
-          Update `RELEASE_VERSION` and `RELEASE_SHA256` together, then run `./scripts/check.sh`.
+          Update \`RELEASE_VERSION\` and \`RELEASE_SHA256\` together, then run \`./scripts/check.sh\`.
           EOF
 
           gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body-file "$body"
